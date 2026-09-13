@@ -1,0 +1,1551 @@
+<title>작도 연습장</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root{
+    --bg:#F3F5F3;
+    --surface:#FFFFFF;
+    --surface-2:#EBEFEC;
+    --ink:#232E29;
+    --ink-soft:#4B5850;
+    --muted:#78877E;
+    --accent:#1E6E86;
+    --accent-strong:#155066;
+    --accent-soft:#DCEBEF;
+    --given:#2B3B35;
+    --construct:#D0263A;
+    --construct-strong:#A3132A;
+    --success:#3C8F5C;
+    --success-soft:#E1F3E6;
+    --danger:#B4523B;
+    --grid-line:rgba(35,46,41,0.07);
+    --canvas-bg:#FCFDFB;
+    --border:#D8DED9;
+    --shadow:0 1px 2px rgba(20,30,25,0.05), 0 8px 24px -12px rgba(20,30,25,0.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#121613;
+      --surface:#191F1B;
+      --surface-2:#212925;
+      --ink:#E9EEEA;
+      --ink-soft:#C3CBC5;
+      --muted:#8B968F;
+      --accent:#5FC1D6;
+      --accent-strong:#8AD6E6;
+      --accent-soft:#1C363C;
+      --given:#DCE4DF;
+      --construct:#FF6B5E;
+      --construct-strong:#FF9285;
+      --success:#77D69A;
+      --success-soft:#173A26;
+      --danger:#E28268;
+      --grid-line:rgba(233,238,234,0.06);
+      --canvas-bg:#0F1412;
+      --border:#2B342E;
+      --shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#121613;
+    --surface:#191F1B;
+    --surface-2:#212925;
+    --ink:#E9EEEA;
+    --ink-soft:#C3CBC5;
+    --muted:#8B968F;
+    --accent:#5FC1D6;
+    --accent-strong:#8AD6E6;
+    --accent-soft:#1C363C;
+    --given:#DCE4DF;
+    --construct:#FF6B5E;
+    --construct-strong:#FF9285;
+    --success:#77D69A;
+    --success-soft:#173A26;
+    --danger:#E28268;
+    --grid-line:rgba(233,238,234,0.06);
+    --canvas-bg:#0F1412;
+    --border:#2B342E;
+    --shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans KR', system-ui, sans-serif;
+    padding-inline:16px;
+    padding-block:28px 48px;
+    display:flex;
+    justify-content:center;
+  }
+  .app{
+    width:100%;
+    max-width:880px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+
+  /* header */
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .masthead h1{
+    font-family:'Gowun Batang', serif;
+    font-weight:700;
+    font-size:clamp(22px,4vw,30px);
+    letter-spacing:-0.01em;
+    margin:0;
+    text-wrap:balance;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .masthead h1 .mark{
+    width:26px;height:26px;flex:none;
+  }
+  .masthead .sub{
+    font-size:12.5px;
+    color:var(--muted);
+    font-family:'IBM Plex Mono', monospace;
+    letter-spacing:0.02em;
+  }
+
+  .steps{
+    display:flex;
+    gap:8px;
+  }
+  .step-dot{
+    width:30px;height:30px;
+    border-radius:50%;
+    border:1.5px solid var(--border);
+    background:var(--surface);
+    color:var(--muted);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    font-weight:600;
+    display:flex;align-items:center;justify-content:center;
+    cursor:default;
+    transition:transform .15s ease, background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .step-dot.unlocked{cursor:pointer;}
+  .step-dot.unlocked:hover{transform:translateY(-1px);}
+  .step-dot.current{
+    border-color:var(--accent);
+    color:var(--accent-strong);
+    background:var(--accent-soft);
+  }
+  .step-dot.done{
+    background:var(--success);
+    border-color:var(--success);
+    color:#fff;
+  }
+
+  /* instruction card */
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+  }
+  .instruction{
+    padding:18px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .instruction .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--accent-strong);
+    font-weight:600;
+  }
+  .instruction h2{
+    font-family:'Gowun Batang', serif;
+    font-size:19px;
+    margin:0;
+    font-weight:700;
+    text-wrap:balance;
+  }
+  .instruction p{
+    margin:0;
+    font-size:14.5px;
+    line-height:1.6;
+    color:var(--ink-soft);
+  }
+  .hint-row{
+    margin-top:2px;
+  }
+  .hint-toggle{
+    font-size:12.5px;
+    color:var(--accent-strong);
+    background:none;
+    border:none;
+    padding:0;
+    cursor:pointer;
+    font-weight:500;
+    text-decoration:underline;
+    text-underline-offset:2px;
+  }
+  .hint-text{
+    font-size:13px;
+    color:var(--ink-soft);
+    background:var(--surface-2);
+    border-radius:8px;
+    padding:10px 12px;
+    margin-top:6px;
+    line-height:1.55;
+    display:none;
+  }
+  .hint-text.show{display:block;}
+
+  /* toolbar */
+  .toolbar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    padding:10px 12px;
+  }
+  .tool-group{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    background:var(--surface-2);
+    padding:5px;
+    border-radius:11px;
+  }
+  .tool-btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 12px;
+    border-radius:8px;
+    border:none;
+    background:transparent;
+    color:var(--ink-soft);
+    font-family:'Noto Sans KR',sans-serif;
+    font-size:13.5px;
+    font-weight:500;
+    cursor:pointer;
+    transition:background .12s ease, color .12s ease;
+    touch-action:manipulation;
+  }
+  .tool-btn svg{width:18px;height:18px;flex:none;}
+  .tool-btn:hover{background:var(--surface);color:var(--ink);}
+  .tool-btn.active{
+    background:var(--accent);
+    color:#fff;
+  }
+  .toolbar .spacer{flex:1;}
+  .icon-btn{
+    display:flex;align-items:center;gap:6px;
+    padding:8px 11px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--ink-soft);
+    font-size:13px;
+    font-weight:500;
+    cursor:pointer;
+    font-family:'Noto Sans KR',sans-serif;
+  }
+  .icon-btn svg{width:15px;height:15px;}
+  .icon-btn:hover{color:var(--ink);border-color:var(--muted);}
+  .icon-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+  /* canvas */
+  .canvas-wrap{
+    position:relative;
+    border-top:1px solid var(--border);
+  }
+  svg#board{
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:4/3;
+    background:var(--canvas-bg);
+    touch-action:none;
+    user-select:none;
+    cursor:crosshair;
+  }
+  .cancel-float{
+    position:absolute;
+    top:12px;right:12px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    color:var(--ink-soft);
+    padding:7px 12px;
+    border-radius:999px;
+    font-size:12.5px;
+    font-weight:500;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+    display:none;
+    align-items:center;
+    gap:5px;
+  }
+  .cancel-float.show{display:flex;}
+
+  .step-hint{
+    padding:9px 20px 14px;
+    font-size:12.5px;
+    color:var(--muted);
+    font-family:'IBM Plex Mono',monospace;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    border-top:1px dashed var(--border);
+  }
+  .step-hint .lamp{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--accent);
+    flex:none;
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion:reduce){.lamp{animation:none;}}
+  @keyframes pulse{
+    0%,100%{opacity:1;} 50%{opacity:0.35;}
+  }
+
+  /* footer status */
+  .status-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:14px 20px;
+    flex-wrap:wrap;
+  }
+  .status-msg{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+    font-weight:600;
+  }
+  .status-msg.solved{color:var(--success);}
+  .status-msg .badge{
+    width:20px;height:20px;
+    border-radius:50%;
+    background:var(--success);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    flex:none;
+  }
+  .status-msg .badge svg{width:12px;height:12px;}
+  .next-btn{
+    background:var(--ink);
+    color:var(--bg);
+    border:none;
+    padding:10px 18px;
+    border-radius:9px;
+    font-size:13.5px;
+    font-weight:700;
+    cursor:pointer;
+    display:flex;align-items:center;gap:7px;
+    opacity:0.35;
+    pointer-events:none;
+    transition:opacity .15s ease, transform .15s ease;
+    font-family:'Noto Sans KR',sans-serif;
+  }
+  .next-btn.enabled{
+    opacity:1;
+    pointer-events:auto;
+    background:var(--success);
+    color:#fff;
+  }
+  .next-btn.enabled:hover{transform:translateY(-1px);}
+  .next-btn svg{width:14px;height:14px;}
+
+  .legend{
+    display:flex;
+    gap:16px;
+    padding:0 20px 16px;
+    flex-wrap:wrap;
+  }
+  .legend-item{
+    display:flex;align-items:center;gap:6px;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .legend-swatch{
+    width:16px;height:2.5px;border-radius:2px;
+  }
+  .legend-swatch.given{background:var(--given);}
+  .legend-swatch.made{background:var(--construct);}
+
+  .finale{
+    text-align:center;
+    padding:56px 24px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
+  .finale .big{
+    font-family:'Gowun Batang',serif;
+    font-size:clamp(24px,5vw,34px);
+    font-weight:700;
+  }
+  .finale p{color:var(--ink-soft);font-size:14.5px;max-width:46ch;margin:0;}
+  .finale button{
+    margin-top:14px;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    padding:11px 20px;
+    border-radius:9px;
+    font-weight:700;
+    font-size:13.5px;
+    cursor:pointer;
+    font-family:'Noto Sans KR',sans-serif;
+  }
+
+  footer.credit{
+    text-align:center;
+    font-size:11.5px;
+    color:var(--muted);
+    font-family:'IBM Plex Mono',monospace;
+    padding-top:4px;
+  }
+
+  @media (max-width:520px){
+    .toolbar{justify-content:center;}
+    .tool-btn span.label{display:none;}
+    .tool-btn{padding:9px;}
+    .status-bar{justify-content:center;text-align:center;}
+  }
+</style>
+
+<div class="app">
+  <div class="masthead">
+    <h1>
+      <svg class="mark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2 L5 20 L12 15 L19 20 Z" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" fill="none"/>
+        <circle cx="12" cy="15" r="2" fill="var(--accent)"/>
+      </svg>
+      작도 연습장
+    </h1>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="sub" id="subline">자와 컴퍼스만으로 · EUCLIDEA STYLE CONSTRUCTION</div>
+
+  <div id="levelView">
+    <div class="card">
+      <div class="instruction">
+        <div class="eyebrow" id="eyebrow">과제 1 / 5</div>
+        <h2 id="levelTitle">선분의 복사</h2>
+        <p id="levelText"></p>
+        <div class="hint-row">
+          <button class="hint-toggle" id="hintToggle">힌트 보기</button>
+          <div class="hint-text" id="hintText"></div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="tool-group" id="toolGroup"></div>
+        <div class="tool-group" id="toolGroupEdit"></div>
+        <div class="spacer"></div>
+        <button class="icon-btn" id="undoBtn" title="실행 취소">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M9 7 L4 12 L9 17 M4 12 H14 A6 6 0 1 1 14 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          실행 취소
+        </button>
+        <button class="icon-btn" id="resetBtn" title="이 문제 다시 시작">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 4 v6 h6 M20 20 v-6 h-6 M5.5 15 A8 8 0 1 0 6 8 L4 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          다시 시작
+        </button>
+        <button class="icon-btn" id="showAllBtn" title="숨긴 도형을 모두 다시 표시">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M2 12 C5 6 19 6 22 12 C19 18 5 18 2 12 Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/></svg>
+          모두 표시
+        </button>
+      </div>
+
+      <div class="canvas-wrap">
+        <svg id="board" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg"></svg>
+        <button class="cancel-float" id="cancelAction">✕ 작업 취소</button>
+      </div>
+
+      <div class="step-hint" id="stepHint"><span class="lamp"></span><span id="stepHintText">점을 찍어 작도를 시작하세요.</span></div>
+
+      <div class="legend">
+        <div class="legend-item"><span class="legend-swatch given"></span>주어진 도형</div>
+        <div class="legend-item"><span class="legend-swatch made"></span>내가 작도한 도형</div>
+      </div>
+
+      <div class="status-bar">
+        <div class="status-msg" id="statusMsg"></div>
+        <button class="next-btn" id="nextBtn">
+          다음 과제
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="finaleView" style="display:none;">
+    <div class="card finale">
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none"><path d="M12 2 L5 20 L12 15 L19 20 Z" stroke="var(--success)" stroke-width="1.6" stroke-linejoin="round" fill="none"/><circle cx="12" cy="15" r="2" fill="var(--success)"/></svg>
+      <div class="big">다섯 가지 작도, 모두 완료했습니다</div>
+      <p>선분의 복사부터 삼각형의 세 가지 작도(SSS, SAS, ASA)까지 자와 컴퍼스만으로 모두 해결했어요. 처음부터 다시 연습해볼 수도 있습니다.</p>
+      <button id="restartAll">처음부터 다시 풀기</button>
+    </div>
+  </div>
+
+  <footer class="credit">직선 = 두 점을 지나는 직선 &nbsp;·&nbsp; 컴퍼스 = 선분(또는 두 점) 길이를 다른 점으로 옮기기 &nbsp;·&nbsp; 교점 = 두 도형을 차례로 클릭해 만나는 점 만들기</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const NS = "http://www.w3.org/2000/svg";
+  const VBW = 800, VBH = 600;
+  const EPS_LEN = 3.2;
+  const EPS_ANG = 2.2;
+  const MIN_AREA = 70;
+
+  // ---------- math helpers ----------
+  function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+  function area2(a,b,c){ return Math.abs((b.x-a.x)*(c.y-a.y)-(c.x-a.x)*(b.y-a.y))/2; }
+  function angleDeg(v,p1,p2){
+    const v1x=p1.x-v.x, v1y=p1.y-v.y, v2x=p2.x-v.x, v2y=p2.y-v.y;
+    const m1=Math.hypot(v1x,v1y), m2=Math.hypot(v2x,v2y);
+    if(m1<1e-6||m2<1e-6) return null;
+    let c=(v1x*v2x+v1y*v2y)/(m1*m2);
+    c=Math.max(-1,Math.min(1,c));
+    return Math.acos(c)*180/Math.PI;
+  }
+  function nearRay(origin,dirPt,p){
+    const vx=dirPt.x-origin.x, vy=dirPt.y-origin.y;
+    const len2=vx*vx+vy*vy;
+    if(len2<1e-6) return false;
+    const wx=p.x-origin.x, wy=p.y-origin.y;
+    const t=(wx*vx+wy*vy)/len2;
+    if(t<0.03) return false;
+    const projx=origin.x+t*vx, projy=origin.y+t*vy;
+    return Math.hypot(p.x-projx,p.y-projy) < EPS_LEN;
+  }
+  function lineLineIntersection(p1,p2,p3,p4){
+    const x1=p1.x,y1=p1.y,x2=p2.x,y2=p2.y,x3=p3.x,y3=p3.y,x4=p4.x,y4=p4.y;
+    const denom=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
+    if(Math.abs(denom)<1e-9) return [];
+    const px=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/denom;
+    const py=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/denom;
+    return [{x:px,y:py}];
+  }
+  function lineCircleIntersection(p1,p2,c,r){
+    const dx=p2.x-p1.x, dy=p2.y-p1.y;
+    const fx=p1.x-c.x, fy=p1.y-c.y;
+    const a=dx*dx+dy*dy;
+    if(a<1e-9) return [];
+    const b=2*(fx*dx+fy*dy);
+    const cc=fx*fx+fy*fy-r*r;
+    let disc=b*b-4*a*cc;
+    if(disc<0) return [];
+    disc=Math.sqrt(disc);
+    const t1=(-b-disc)/(2*a), t2=(-b+disc)/(2*a);
+    const pts=[{x:p1.x+t1*dx,y:p1.y+t1*dy}];
+    if(Math.abs(t2-t1)>1e-6) pts.push({x:p1.x+t2*dx,y:p1.y+t2*dy});
+    return pts;
+  }
+  function circleCircleIntersection(c1,r1,c2,r2){
+    const d=dist(c1,c2);
+    if(d<1e-6) return [];
+    if(d>r1+r2+1e-6 || d<Math.abs(r1-r2)-1e-6) return [];
+    let a=(r1*r1-r2*r2+d*d)/(2*d);
+    let h2=r1*r1-a*a; if(h2<0) h2=0;
+    const h=Math.sqrt(h2);
+    const xm=c1.x+a*(c2.x-c1.x)/d, ym=c1.y+a*(c2.y-c1.y)/d;
+    const p1={x:xm+h*(c2.y-c1.y)/d, y:ym-h*(c2.x-c1.x)/d};
+    const p2={x:xm-h*(c2.y-c1.y)/d, y:ym+h*(c2.x-c1.x)/d};
+    if(dist(p1,p2)<1e-6) return [p1];
+    return [p1,p2];
+  }
+  function clipToRect(a,b){
+    // extend segment a-b far then clip to [0,VBW]x[0,VBH] (Liang-Barsky)
+    const dx=b.x-a.x, dy=b.y-a.y;
+    let ex1=a.x-dx*50, ey1=a.y-dy*50, ex2=b.x+dx*50, ey2=b.y+dy*50;
+    let t0=0,t1=1;
+    const ddx=ex2-ex1, ddy=ey2-ey1;
+    const p=[-ddx,ddx,-ddy,ddy];
+    const q=[ex1-0, VBW-ex1, ey1-0, VBH-ey1];
+    for(let i=0;i<4;i++){
+      if(Math.abs(p[i])<1e-9){ if(q[i]<0) return null; continue; }
+      const r=q[i]/p[i];
+      if(p[i]<0){ if(r>t1) return null; if(r>t0) t0=r; }
+      else { if(r<t0) return null; if(r<t1) t1=r; }
+    }
+    return {x1:ex1+t0*ddx, y1:ey1+t0*ddy, x2:ex1+t1*ddx, y2:ey1+t1*ddy};
+  }
+  // ---------- state ----------
+  let state = null; // current level runtime state
+  let currentLevel = 0;
+  let maxUnlocked = 0;
+  const solved = [false,false,false,false,false];
+  let activeTool = 'line';
+  let pending = []; // ids of points selected mid-action
+  let hoverPt = null;
+  let lastPointerType = 'mouse';
+  const svg = document.getElementById('board');
+
+  function freshState(){
+    return { points:[], lines:[], circles:[], history:[], labelCounter:1, ctx:{}, done:false };
+  }
+
+  function addPoint(x,y,label,given,noLabel){
+    const id = 'pt'+Math.random().toString(36).slice(2,9);
+    const pt = {id,x,y,label:label||null,given:!!given,noLabel:!!noLabel};
+    state.points.push(pt);
+    return pt;
+  }
+  function autoLabel(){
+    return 'P' + (state.labelCounter++);
+  }
+  function findPoint(id){ return state.points.find(p=>p.id===id); }
+
+  function addSegmentGiven(a,b,style){
+    state.lines.push({id:'ln'+Math.random().toString(36).slice(2,9), p1:a.id, p2:b.id, given:true, ray:false, style:style||null});
+  }
+  function addRayGiven(a,b,style){
+    state.lines.push({id:'ln'+Math.random().toString(36).slice(2,9), p1:a.id, p2:b.id, given:true, ray:true, style:style||null});
+  }
+
+  // ---------- level definitions ----------
+  const LEVELS = [
+    {
+      title:'선분의 복사',
+      text:'선분 AB와 길이가 같은 선분을, 점 C를 시작점으로 하여 주어진 반직선 위에 작도하세요.',
+      hint:'컴퍼스 도구를 고른 뒤 선분 AB를 클릭하면 그 길이가 그대로 반지름이 돼요. 이어서 점 C를 클릭하면 반지름이 옮겨진 원이 그려집니다. 마지막으로 교점 도구로 그 원과 반직선을 차례로 클릭해 만나는 점을 표시하세요.',
+      setup(){
+        const A=addPoint(130,150,'A',true);
+        const B=addPoint(300,150,'B',true);
+        const C=addPoint(150,440,'C',true);
+        const d1=addPoint(785,440,null,true,true);
+        addSegmentGiven(A,B);
+        addRayGiven(C,d1);
+        state.ctx = {A,B,C,d1};
+      },
+      check(){
+        const {A,B,C,d1} = state.ctx;
+        const target = dist(A,B);
+        for(const p of state.points){
+          if(p.given) continue;
+          if(Math.abs(dist(C,p)-target) < EPS_LEN && nearRay(C,d1,p) && isSegmentCovered(C,p)) return true;
+        }
+        return false;
+      }
+    },
+    {
+      title:'각의 복사',
+      text:'각 POQ와 크기가 같은 각을, 점 O′를 꼭짓점으로 하여 주어진 반직선을 한 변으로 작도하세요.',
+      hint:'원 도구로 O를 중심으로 하는 원을 그리고, 교점 도구로 그 원이 두 변 OP, OQ와 만나는 두 점을 각각 표시하세요. 같은 반지름의 원을 O′에도 그린 뒤, 방금 표시한 두 점 사이의 거리를 컴퍼스로 옮겨 그 원과 교차시키면 각의 크기를 그대로 옮길 수 있어요.',
+      setup(){
+        const O=addPoint(150,470,'O',true);
+        const P=addPoint(330,470,'P',true);
+        const Q=addPoint(270,330,'Q',true);
+        const O2=addPoint(500,470,"O′",true);
+        const d1=addPoint(785,470,null,true,true);
+        addRayGiven(O,P);
+        addRayGiven(O,Q);
+        addRayGiven(O2,d1);
+        state.ctx = {O,P,Q,O2,d1};
+      },
+      check(){
+        const {O,P,Q,O2,d1} = state.ctx;
+        const target = angleDeg(O,P,Q);
+        for(const p of state.points){
+          if(p.given) continue;
+          if(dist(O2,p) < 12) continue;
+          const a = angleDeg(O2,d1,p);
+          if(a!==null && Math.abs(a-target) < EPS_ANG && isSegmentCovered(O2,p)) return true;
+        }
+        return false;
+      }
+    },
+    {
+      title:'세 변의 길이가 주어진 삼각형의 작도 (SSS)',
+      text:'길이가 각각 다른 세 선분 a, b, c를 세 변으로 하는 삼각형을 빈 공간에 작도하세요.',
+      hint:'세 선분 중 하나(예: a)를 한 변으로 삼아 먼저 그리세요. 컴퍼스로 선분 b를 클릭한 뒤 한쪽 끝점을 클릭하면 길이 b인 원이 그려지고, 같은 방법으로 c도 다른 끝점에 옮기세요. 교점 도구로 두 원이 만나는 점을 표시하면 삼각형의 나머지 꼭짓점이 됩니다.',
+      setup(){
+        const a1=addPoint(90,90,null,true,true), a2=addPoint(230,90,null,true,true);
+        const b1=addPoint(90,210,null,true,true), b2=addPoint(260,210,null,true,true);
+        const c1=addPoint(90,330,null,true,true), c2=addPoint(190,330,null,true,true);
+        addSegmentGiven(a1,a2,{label:'a', mid:midOf(a1,a2)});
+        addSegmentGiven(b1,b2,{label:'b', mid:midOf(b1,b2)});
+        addSegmentGiven(c1,c2,{label:'c', mid:midOf(c1,c2)});
+        state.ctx = {a1,a2,b1,b2,c1,c2, La:dist(a1,a2), Lb:dist(b1,b2), Lc:dist(c1,c2)};
+      },
+      check(){
+        const {La,Lb,Lc} = state.ctx;
+        const targets=[La,Lb,Lc].sort((x,y)=>x-y);
+        const pts = state.points;
+        const n = pts.length;
+        for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) for(let k=j+1;k<n;k++){
+          const P=pts[i],Q=pts[j],R=pts[k];
+          if(area2(P,Q,R) < MIN_AREA) continue;
+          const sides=[dist(P,Q),dist(Q,R),dist(R,P)].sort((x,y)=>x-y);
+          if(Math.abs(sides[0]-targets[0])<EPS_LEN && Math.abs(sides[1]-targets[1])<EPS_LEN && Math.abs(sides[2]-targets[2])<EPS_LEN){
+            if(isSegmentCovered(P,Q) && isSegmentCovered(Q,R) && isSegmentCovered(R,P)) return true;
+          }
+        }
+        return false;
+      }
+    },
+    {
+      title:'두 변과 끼인각이 주어진 삼각형의 작도 (SAS)',
+      text:'두 선분 b, c와 그 끼인각 ∠A가 주어졌습니다. 이를 이용해 삼각형을 빈 공간에 작도하세요.',
+      hint:'컴퍼스로 선분 b를 클릭한 뒤 각의 꼭짓점을 클릭하면 그 점을 중심으로 길이 b인 원이 그려져요. 같은 방법으로 c의 길이도 원으로 옮기고, 교점 도구로 각 원이 해당 변과 만나는 점을 표시한 뒤, 직선 도구로 그 두 점을 이으면 삼각형이 완성됩니다.',
+      setup(){
+        const b1=addPoint(90,90,null,true,true), b2=addPoint(230,90,null,true,true);
+        const c1=addPoint(90,210,null,true,true), c2=addPoint(200,210,null,true,true);
+        const Ov=addPoint(150,380,null,true,true);
+        const Pa=addPoint(320,380,null,true,true);
+        const Pb=addPoint(230,260,null,true,true);
+        addSegmentGiven(b1,b2,{label:'b', mid:midOf(b1,b2)});
+        addSegmentGiven(c1,c2,{label:'c', mid:midOf(c1,c2)});
+        addRayGiven(Ov,Pa);
+        addRayGiven(Ov,Pb);
+        state.ctx = {Lb:dist(b1,b2), Lc:dist(c1,c2), Ov,Pa,Pb, targetAngle: angleDeg(Ov,Pa,Pb)};
+        state.ctx._anglePts=[Ov,Pa,Pb];
+      },
+      check(){
+        const {Lb,Lc,targetAngle} = state.ctx;
+        const pts = state.points;
+        const n = pts.length;
+        const wantSet=[Lb,Lc].sort((x,y)=>x-y);
+        for(let i=0;i<n;i++) for(let j=0;j<n;j++){ if(i===j) continue;
+          for(let k=j+1;k<n;k++){ if(k===i) continue;
+            const V=pts[i], X=pts[j], Y=pts[k];
+            if(area2(V,X,Y) < MIN_AREA) continue;
+            const s1=dist(V,X), s2=dist(V,Y);
+            const got=[s1,s2].sort((x,y)=>x-y);
+            if(Math.abs(got[0]-wantSet[0])>EPS_LEN || Math.abs(got[1]-wantSet[1])>EPS_LEN) continue;
+            const ang=angleDeg(V,X,Y);
+            if(ang!==null && Math.abs(ang-targetAngle)<EPS_ANG){
+              if(isSegmentCovered(V,X) && isSegmentCovered(V,Y) && isSegmentCovered(X,Y)) return true;
+            }
+          }
+        }
+        return false;
+      }
+    },
+    {
+      title:'한 변과 그 양 끝각이 주어진 삼각형의 작도 (ASA)',
+      text:'선분 a와 그 양 끝각 ∠B, ∠C가 주어졌습니다. 이를 이용해 삼각형을 작도하세요.',
+      hint:'선분 a의 양 끝점을 각각 활용해, 한쪽 끝에서는 ∠B를, 다른 쪽 끝에서는 ∠C를 각의 복사 방법으로 옮겨 그리세요. 두 각의 변을 직선 도구로 연장한 뒤, 교점 도구로 두 직선이 만나는 점을 표시하면 나머지 꼭짓점이 됩니다.',
+      setup(){
+        const r1=addPoint(90,470,null,true,true), r2=addPoint(270,470,null,true,true);
+        const Bv=addPoint(520,150,null,true,true), Bp1=addPoint(670,150,null,true,true), Bp2=addPoint(580,260,null,true,true);
+        const Cv=addPoint(520,380,null,true,true), Cp1=addPoint(670,380,null,true,true), Cp2=addPoint(620,300,null,true,true);
+        addSegmentGiven(r1,r2,{label:'a', mid:midOf(r1,r2)});
+        addRayGiven(Bv,Bp1); addRayGiven(Bv,Bp2);
+        addRayGiven(Cv,Cp1); addRayGiven(Cv,Cp2);
+        state.ctx = {La:dist(r1,r2), targetB: angleDeg(Bv,Bp1,Bp2), targetC: angleDeg(Cv,Cp1,Cp2), Bv,Bp1,Bp2,Cv,Cp1,Cp2};
+      },
+      check(){
+        const {La,targetB,targetC} = state.ctx;
+        const pts = state.points;
+        const n = pts.length;
+        for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){
+          const X=pts[i], Y=pts[j];
+          if(Math.abs(dist(X,Y)-La) > EPS_LEN) continue;
+          for(let k=0;k<n;k++){
+            if(k===i||k===j) continue;
+            const Z=pts[k];
+            if(area2(X,Y,Z) < MIN_AREA) continue;
+            const angX=angleDeg(X,Y,Z), angY=angleDeg(Y,X,Z);
+            if(angX===null||angY===null) continue;
+            if((Math.abs(angX-targetB)<EPS_ANG && Math.abs(angY-targetC)<EPS_ANG) ||
+               (Math.abs(angX-targetC)<EPS_ANG && Math.abs(angY-targetB)<EPS_ANG)){
+              if(isSegmentCovered(X,Y) && isSegmentCovered(X,Z) && isSegmentCovered(Y,Z)) return true;
+            }
+          }
+        }
+        return false;
+      }
+    }
+  ];
+  function midOf(a,b){ return {x:(a.x+b.x)/2, y:(a.y+b.y)/2}; }
+
+  // True once the segment between P and Q is actually drawn on the board —
+  // either it lies along a given ray/segment (within that shape's own bound),
+  // or along a line the student constructed (given=false lines are drawn
+  // edge-to-edge, so any two collinear points on them count). Levels use this
+  // so that finding the right vertex positions isn't enough by itself — the
+  // sides have to actually be drawn, exactly like a real construction.
+  function isSegmentCovered(P,Q){
+    if(dist(P,Q) < 1) return true; // same point, nothing to draw
+    for(const l of state.lines){
+      const a=findPoint(l.p1), b=findPoint(l.p2);
+      if(distPointToInfiniteLine(P,a,b) < EPS_LEN && distPointToInfiniteLine(Q,a,b) < EPS_LEN){
+        if(!l.given) return true;
+        if(withinGivenLineBounds(P,l) && withinGivenLineBounds(Q,l)) return true;
+      }
+    }
+    return false;
+  }
+
+  // ---------- tool defs ----------
+  // Mirrors 알지오매스(AlgeoMath)'s own tool set: 점/교점 (점 도구모음), 직선 (선 도구모음),
+  // 원/컴퍼스 (원 도구모음) — same click order and same object-click shortcuts as the manual.
+  const TOOLS = [
+    {id:'point', label:'점', icon:'<circle cx="12" cy="12" r="3" fill="currentColor"/>'},
+    {id:'intersect', label:'교점', icon:'<path d="M4 4 L20 20 M20 4 L4 20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.55"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/>'},
+    {id:'line', label:'직선', icon:'<line x1="4" y1="20" x2="20" y2="4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="4" cy="20" r="2" fill="currentColor"/><circle cx="20" cy="4" r="2" fill="currentColor"/>'},
+    {id:'circle', label:'원', icon:'<circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/>'},
+    {id:'compass', label:'컴퍼스', icon:'<path d="M12 4 L6 20 M12 4 L18 20 M9 12 h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="4" r="1.6" fill="currentColor"/>'},
+    {id:'hide', label:'숨기기', icon:'<path d="M3 3 L21 21 M10.6 6.4 C11 6.3 11.5 6.3 12 6.3 C17 6.3 20.5 12 20.5 12 C20 13 19 14.3 17.7 15.4 M6.2 8.6 C4.5 9.8 3.5 12 3.5 12 C3.5 12 7 17.7 12 17.7 C13 17.7 13.9 17.5 14.7 17.1 M9.7 10 A2.6 2.6 0 0 0 12 14.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'},
+    {id:'delete', label:'지우기', icon:'<path d="M5 7 H19 M9 7 V5 a1 1 0 0 1 1-1 h4 a1 1 0 0 1 1 1 V7 M7 7 L8 20 a1 1 0 0 0 1 1 H15 a1 1 0 0 0 1-1 L17 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'}
+  ];
+  const TOOL_CLICKS = {point:1, line:2, circle:2}; // 'intersect' and 'compass' use custom flows below
+  const STEP_TEXT = {
+    point:['점을 찍을 위치를 클릭(또는 탭)하세요.'],
+    line:['직선이 지나갈 첫 번째 점을 선택하세요.','직선이 지나갈 두 번째 점을 선택하세요.'],
+    circle:['원의 중심이 될 점을 선택하세요.','원 위를 지나갈 점을 선택하세요.']
+  };
+  const INTERSECT_START_HINT = '교점을 만들 첫 번째 도형(직선/원)을 클릭하세요.';
+  const COMPASS_START_HINT = '반지름으로 쓸 선분을 클릭하거나, 반지름의 두 점을 순서대로 선택하세요.';
+  const HIDE_START_HINT = '숨기고 싶은 내 원이나 직선을 클릭하세요. 이미 숨긴 도형(흐린 점선)을 클릭하면 다시 보여요. 주어진 도형은 숨길 수 없어요.';
+  const DELETE_START_HINT = '지우고 싶은 내 원이나 직선을 클릭하세요. 주어진 도형은 지울 수 없고, 실행 취소로 되돌릴 수 있어요.';
+
+  // ---------- DOM building ----------
+  const toolGroup = document.getElementById('toolGroup');
+  const toolGroupEdit = document.getElementById('toolGroupEdit');
+  const EDIT_TOOLS = new Set(['hide','delete']);
+  TOOLS.forEach(t=>{
+    const btn=document.createElement('button');
+    btn.className='tool-btn';
+    btn.dataset.tool=t.id;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none">${t.icon}</svg><span class="label">${t.label}</span>`;
+    btn.addEventListener('click', ()=>selectTool(t.id));
+    (EDIT_TOOLS.has(t.id) ? toolGroupEdit : toolGroup).appendChild(btn);
+  });
+  const stepsEl = document.getElementById('steps');
+  for(let i=0;i<5;i++){
+    const d=document.createElement('div');
+    d.className='step-dot';
+    d.textContent=(i+1);
+    d.addEventListener('click', ()=>{ if(i<=maxUnlocked) loadLevel(i); });
+    stepsEl.appendChild(d);
+  }
+
+  // compassStep / intersectStep hold the state of the two tools' custom,
+  // AlgeoMath-style flows (see handleCompassClick / handleIntersectClick).
+  let compassStep = null;   // null | {p1id, createdIds} | {radius, createdIds}
+  let intersectStep = null; // null | {kind:'line'|'circle', ref}
+
+  // Abandons whatever multi-click action is currently in progress (for any
+  // tool) and removes any points that were only created for it. Used when
+  // switching tools, hitting 취소/undo, or resetting the level.
+  function discardInProgress(){
+    const created = (state._pendingCreated||[]).concat(compassStep && compassStep.createdIds ? compassStep.createdIds : []);
+    if(created.length) state.points = state.points.filter(p=>!created.includes(p.id));
+    state._pendingCreated = [];
+    pending = [];
+    compassStep = null;
+    intersectStep = null;
+    document.getElementById('cancelAction').classList.remove('show');
+  }
+  function resetHintForActiveTool(){
+    if(activeTool==='intersect') setStepHint(INTERSECT_START_HINT);
+    else if(activeTool==='compass') setStepHint(COMPASS_START_HINT);
+    else if(activeTool==='hide') setStepHint(HIDE_START_HINT);
+    else if(activeTool==='delete') setStepHint(DELETE_START_HINT);
+    else updateStepHint();
+  }
+
+  function selectTool(id){
+    discardInProgress();
+    activeTool=id;
+    document.querySelectorAll('.tool-btn').forEach(b=>b.classList.toggle('active', b.dataset.tool===id));
+    resetHintForActiveTool();
+    render();
+  }
+  function setStepHint(text){
+    document.getElementById('stepHintText').textContent = text;
+  }
+  function updateStepHint(){
+    const idx = pending.length;
+    const arr = STEP_TEXT[activeTool];
+    if(!arr) return;
+    setStepHint(arr[Math.min(idx, arr.length-1)]);
+  }
+
+  // ---------- interaction ----------
+  function svgPointFromEvent(evt){
+    const rect = svg.getBoundingClientRect();
+    const x = (evt.clientX - rect.left) / rect.width * VBW;
+    const y = (evt.clientY - rect.top) / rect.height * VBH;
+    return {x,y};
+  }
+  function snapThresholdFor(pointerType){
+    const screenPx = pointerType==='touch' ? 24 : 13;
+    const rect = svg.getBoundingClientRect();
+    const scale = rect.width>0 ? VBW/rect.width : 1;
+    return screenPx*scale;
+  }
+
+  // -- object hit-testing (for 교점 and the 컴퍼스 "click a segment" shortcut) --
+  function distPointToSegment(pt,a,b){
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const len2=dx*dx+dy*dy;
+    if(len2<1e-9) return dist(pt,a);
+    let t=((pt.x-a.x)*dx+(pt.y-a.y)*dy)/len2;
+    t=Math.max(0,Math.min(1,t));
+    return Math.hypot(pt.x-(a.x+t*dx), pt.y-(a.y+t*dy));
+  }
+  function distPointToInfiniteLine(pt,a,b){
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const len=Math.hypot(dx,dy);
+    if(len<1e-9) return dist(pt,a);
+    return Math.abs((pt.x-a.x)*dy-(pt.y-a.y)*dx)/len;
+  }
+  // A given shape is only ever drawn as the bounded segment between its two
+  // points, so hit-testing follows the same bound; a constructed (자) line is
+  // drawn extended edge-to-edge, so it hit-tests as a true infinite line.
+  function lineHitDist(pt,l){
+    const a=findPoint(l.p1), b=findPoint(l.p2);
+    return l.given ? distPointToSegment(pt,a,b) : distPointToInfiniteLine(pt,a,b);
+  }
+  // Hidden objects are invisible (and so un-clickable) under every tool
+  // except 숨기기 itself, which is the only one meant to reach them again.
+  function isReachable(obj){ return !obj.hidden || activeTool==='hide'; }
+  function findNearestLineObj(pt,threshold){
+    let best=null,bestD=Infinity;
+    for(const l of state.lines){
+      if(!isReachable(l)) continue;
+      const d=lineHitDist(pt,l);
+      if(d<threshold && d<bestD){ best=l; bestD=d; }
+    }
+    return best;
+  }
+  function findNearestCircleObj(pt,threshold){
+    let best=null,bestD=Infinity;
+    for(const c of state.circles){
+      if(!isReachable(c)) continue;
+      const center=findPoint(c.center);
+      const d=Math.abs(dist(pt,center)-c.r);
+      if(d<threshold && d<bestD){ best=c; bestD=d; }
+    }
+    return best;
+  }
+  function findNearestObject(pt,threshold){
+    const l=findNearestLineObj(pt,threshold);
+    const c=findNearestCircleObj(pt,threshold);
+    if(!l && !c) return null;
+    if(l && !c) return {kind:'line', ref:l};
+    if(c && !l) return {kind:'circle', ref:c};
+    const dl=lineHitDist(pt,l);
+    const center=findPoint(c.center);
+    const dc=Math.abs(dist(pt,center)-c.r);
+    return dl<=dc ? {kind:'line', ref:l} : {kind:'circle', ref:c};
+  }
+  function sameObject(o1,o2){ return !!o1 && !!o2 && o1.kind===o2.kind && o1.ref.id===o2.ref.id; }
+  // A given 선분/반직선 is only ever really "there" between its own two
+  // points (that's the whole point of drawing given shapes as bounded
+  // segments rather than infinite lines) — so an intersection can only be
+  // real if it actually falls inside that bound, not on the invisible
+  // extension a plain infinite-line formula would also find. Constructed
+  // (자) lines really are drawn edge-to-edge, so they're never bound-checked.
+  function withinGivenLineBounds(pt, lineObj){
+    if(!lineObj.given) return true;
+    const a=findPoint(lineObj.p1), b=findPoint(lineObj.p2);
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const len2=dx*dx+dy*dy;
+    if(len2<1e-9) return true;
+    const t=((pt.x-a.x)*dx+(pt.y-a.y)*dy)/len2;
+    const tol = 2/Math.sqrt(len2); // ~2 svg units of slack at either end
+    return t>-tol && t<1+tol;
+  }
+  function computeIntersections(objA,objB){
+    let pts;
+    if(objA.kind==='line' && objB.kind==='line'){
+      const A=findPoint(objA.ref.p1), B=findPoint(objA.ref.p2), C=findPoint(objB.ref.p1), D=findPoint(objB.ref.p2);
+      pts = lineLineIntersection(A,B,C,D);
+    } else if(objA.kind==='circle' && objB.kind==='circle'){
+      const c1=findPoint(objA.ref.center), c2=findPoint(objB.ref.center);
+      pts = circleCircleIntersection(c1,objA.ref.r,c2,objB.ref.r);
+    } else {
+      const lineObj = objA.kind==='line' ? objA.ref : objB.ref;
+      const circleObj = objA.kind==='circle' ? objA.ref : objB.ref;
+      const A=findPoint(lineObj.p1), B=findPoint(lineObj.p2), c=findPoint(circleObj.center);
+      pts = lineCircleIntersection(A,B,c,circleObj.r);
+    }
+    if(objA.kind==='line') pts = pts.filter(p=>withinGivenLineBounds(p,objA.ref));
+    if(objB.kind==='line') pts = pts.filter(p=>withinGivenLineBounds(p,objB.ref));
+    return pts;
+  }
+
+  // Point-only resolution used by 점/직선/원/컴퍼스 when they need a point:
+  // an existing point within `threshold`, otherwise (unless noFreePoint) a
+  // brand-new free point at the raw location. Intersections are NOT auto-
+  // snapped here — matching AlgeoMath, only the dedicated 교점 tool creates
+  // an intersection point (from two object clicks, not a location click).
+  function findSnapTarget(rawPt, threshold, opts){
+    opts = opts || {};
+    let best=null, bestD=Infinity;
+    for(const p of state.points){
+      const d=dist(p,rawPt);
+      if(d<threshold && d<bestD){ best=p; bestD=d; }
+    }
+    if(best) return {x:best.x, y:best.y, existing:best};
+    if(opts.noFreePoint) return null;
+    return {x:rawPt.x, y:rawPt.y, existing:null};
+  }
+  function resolveClick(rawPt, threshold, opts){
+    const snap = findSnapTarget(rawPt, threshold, opts);
+    if(!snap) return null;
+    if(snap.existing) return {point:snap.existing, created:false};
+    const np = addPoint(snap.x, snap.y, autoLabel(), false);
+    return {point:np, created:true};
+  }
+
+  function pushHistory(entry){ state.history.push(entry); }
+
+  function handleClick(evt){
+    const raw = svgPointFromEvent(evt);
+    // 숨기기/지우기 stay usable even after a level is solved, so clutter from
+    // earlier steps can still be cleaned up while looking at the finished figure.
+    if(activeTool==='hide'){ handleHideClick(raw); return; }
+    if(activeTool==='delete'){ handleDeleteClick(raw); return; }
+    if(state.done) return;
+    if(activeTool==='compass'){ handleCompassClick(raw); return; }
+    if(activeTool==='intersect'){ handleIntersectClick(raw); return; }
+
+    const threshold = snapThresholdFor(lastPointerType);
+    const result = resolveClick(raw, threshold, {});
+    const {point, created} = result;
+    const createdIds = created ? [point.id] : [];
+    pending.push(point.id);
+
+    const clicksNeeded = TOOL_CLICKS[activeTool];
+    document.getElementById('cancelAction').classList.toggle('show', pending.length>0 && pending.length<clicksNeeded);
+
+    if(activeTool==='point'){
+      pushHistory({newPointIds:createdIds, newShapeId:null});
+      pending=[];
+    } else if(pending.length===clicksNeeded){
+      finishAction(createdIds);
+    } else {
+      state._pendingCreated = (state._pendingCreated||[]).concat(createdIds);
+    }
+    updateStepHint();
+    render();
+    syncSolvedState();
+  }
+
+  // ---- 컴퍼스 (compass): AlgeoMath supports two ways to set the radius —
+  // click an existing 선분 directly (its length becomes the radius), or click
+  // two points in turn (their distance becomes the radius) — then click a
+  // point to center the circle there. ----
+  function handleCompassClick(raw){
+    const ptThreshold = snapThresholdFor(lastPointerType);
+    const lineThreshold = ptThreshold*1.3;
+
+    if(!compassStep){
+      // first input: an existing point wins if it's within range (point-to-
+      // point radius mode); otherwise a segment/line under the click sets
+      // the radius directly; otherwise start a fresh free point.
+      const hitPoint = findSnapTarget(raw, ptThreshold, {noFreePoint:true});
+      if(hitPoint){
+        compassStep = {p1id: hitPoint.existing.id, createdIds:[]};
+        setStepHint('반지름의 끝점을 선택하세요. (두 점 사이 거리가 반지름이 됩니다)');
+        render();
+        return;
+      }
+      const hitLine = findNearestLineObj(raw, lineThreshold);
+      if(hitLine){
+        const a=findPoint(hitLine.p1), b=findPoint(hitLine.p2);
+        compassStep = {radius: dist(a,b), createdIds:[]};
+        setStepHint('이 선분의 길이를 반지름으로 사용합니다. 원의 중심이 될 점을 선택하세요.');
+        document.getElementById('cancelAction').classList.add('show');
+        render();
+        return;
+      }
+      const np = addPoint(raw.x, raw.y, autoLabel(), false);
+      compassStep = {p1id: np.id, createdIds:[np.id]};
+      setStepHint('반지름의 끝점을 선택하세요. (두 점 사이 거리가 반지름이 됩니다)');
+      document.getElementById('cancelAction').classList.add('show');
+      render();
+      return;
+    }
+
+    if(compassStep.p1id && compassStep.radius===undefined){
+      const result = resolveClick(raw, ptThreshold, {});
+      const createdIds = compassStep.createdIds.concat(result.created?[result.point.id]:[]);
+      const radius = dist(findPoint(compassStep.p1id), result.point);
+      compassStep = {radius, createdIds};
+      setStepHint('그 반지름으로 원을 그릴 중심점을 선택하세요.');
+      document.getElementById('cancelAction').classList.add('show');
+      render();
+      return;
+    }
+
+    // final step: center point
+    const result = resolveClick(raw, ptThreshold, {});
+    const createdIds = compassStep.createdIds.concat(result.created?[result.point.id]:[]);
+    const radius = compassStep.radius;
+    compassStep = null;
+    document.getElementById('cancelAction').classList.remove('show');
+    if(radius>0.5){
+      const shapeId='cr'+Math.random().toString(36).slice(2,9);
+      state.circles.push({id:shapeId, center:result.point.id, r:radius, given:false});
+      pushHistory({newPointIds:createdIds, newShapeId:shapeId});
+    } else {
+      pushHistory({newPointIds:createdIds, newShapeId:null});
+    }
+    setStepHint(COMPASS_START_HINT);
+    render();
+    syncSolvedState();
+  }
+
+  // ---- 교점 (intersection): click two objects (line or circle) — not a
+  // location — and every intersection point between them is created, exactly
+  // like AlgeoMath's 교점 도구 / InterPoint(). ----
+  function handleIntersectClick(raw){
+    const threshold = snapThresholdFor(lastPointerType)*1.4;
+    const hit = findNearestObject(raw, threshold);
+    if(!hit){ flashMiss('클릭한 곳 근처에 직선이나 원이 없어요. 도형 위를 클릭해보세요.'); return; }
+
+    if(!intersectStep){
+      intersectStep = hit;
+      setStepHint('교점을 만들 두 번째 도형을 클릭하세요.');
+      document.getElementById('cancelAction').classList.add('show');
+      render();
+      return;
+    }
+    if(sameObject(intersectStep, hit)){
+      flashMiss('같은 도형이에요. 다른 도형을 클릭해주세요.');
+      return;
+    }
+    const pts = computeIntersections(intersectStep, hit);
+    intersectStep = null;
+    document.getElementById('cancelAction').classList.remove('show');
+    if(pts.length===0){
+      flashMiss('두 도형이 서로 만나지 않아요.');
+      render();
+      return;
+    }
+    const createdIds=[];
+    for(const p of pts){
+      const already = state.points.find(ep=>dist(ep,p)<2);
+      if(already) continue;
+      const np = addPoint(p.x, p.y, autoLabel(), false);
+      createdIds.push(np.id);
+    }
+    pushHistory({newPointIds:createdIds, newShapeId:null});
+    setStepHint(INTERSECT_START_HINT);
+    render();
+    syncSolvedState();
+  }
+
+  // ---- 숨기기 / 지우기: click one of MY OWN lines or circles to toggle its
+  // visibility or remove it outright — given (문제에서 준) shapes are
+  // protected either way, matching AlgeoMath's 대상숨기기/삭제 기능. ----
+  function handleHideClick(raw){
+    const threshold = snapThresholdFor(lastPointerType)*1.4;
+    const hit = findNearestObject(raw, threshold);
+    if(!hit){ flashMiss('근처에 내가 그린 원이나 직선이 없어요.'); return; }
+    if(hit.ref.given){ flashMiss('주어진 도형은 숨길 수 없어요.'); return; }
+    const prevHidden = !!hit.ref.hidden;
+    hit.ref.hidden = !prevHidden;
+    pushHistory({type:'hide', kind:hit.kind, objId:hit.ref.id, prevHidden});
+    render();
+  }
+  function handleDeleteClick(raw){
+    const threshold = snapThresholdFor(lastPointerType)*1.4;
+    const hit = findNearestObject(raw, threshold);
+    if(!hit){ flashMiss('근처에 내가 그린 원이나 직선이 없어요.'); return; }
+    if(hit.ref.given){ flashMiss('주어진 도형은 지울 수 없어요.'); return; }
+    const arr = hit.kind==='line' ? state.lines : state.circles;
+    const idx = arr.findIndex(o=>o.id===hit.ref.id);
+    if(idx===-1) return;
+    const removed = arr.splice(idx,1)[0];
+    pushHistory({type:'delete', kind:hit.kind, obj:removed});
+    syncSolvedState();
+    render();
+  }
+  let missTimer=null;
+  function flashMiss(message){
+    const el = document.getElementById('stepHintText');
+    let original;
+    if(activeTool==='intersect') original = intersectStep ? '교점을 만들 두 번째 도형을 클릭하세요.' : INTERSECT_START_HINT;
+    else if(activeTool==='compass') original = compassStep ? '반지름의 끝점을 선택하세요.' : COMPASS_START_HINT;
+    else if(activeTool==='hide') original = HIDE_START_HINT;
+    else if(activeTool==='delete') original = DELETE_START_HINT;
+    else original = STEP_TEXT[activeTool] ? STEP_TEXT[activeTool][Math.min(pending.length, STEP_TEXT[activeTool].length-1)] : '';
+    el.textContent = message || '근처에 도형이 없어요. 조금 더 가까이 클릭해보세요.';
+    el.parentElement.style.color = 'var(--danger)';
+    clearTimeout(missTimer);
+    missTimer = setTimeout(()=>{ el.parentElement.style.color=''; el.textContent = original; }, 1600);
+  }
+
+  function finishAction(lastCreatedIds){
+    const ids = pending.slice();
+    const createdIds = (state._pendingCreated||[]).concat(lastCreatedIds);
+    state._pendingCreated = [];
+    let shapeId=null;
+    if(activeTool==='line'){
+      const p1=findPoint(ids[0]), p2=findPoint(ids[1]);
+      if(p1.id!==p2.id){
+        shapeId='ln'+Math.random().toString(36).slice(2,9);
+        state.lines.push({id:shapeId, p1:p1.id, p2:p2.id, given:false, ray:false});
+      }
+    } else if(activeTool==='circle'){
+      const c=findPoint(ids[0]), r=findPoint(ids[1]);
+      if(c.id!==r.id){
+        shapeId='cr'+Math.random().toString(36).slice(2,9);
+        state.circles.push({id:shapeId, center:c.id, r:dist(c,r), given:false});
+      }
+    }
+    pushHistory({newPointIds:createdIds, newShapeId:shapeId});
+    pending=[];
+    document.getElementById('cancelAction').classList.remove('show');
+  }
+
+  function cancelPendingAction(){
+    discardInProgress();
+    resetHintForActiveTool();
+    render();
+  }
+
+  function undo(){
+    discardInProgress();
+    resetHintForActiveTool();
+    if(state.history.length===0){ render(); return; }
+    const last = state.history.pop();
+    if(last.type==='hide'){
+      const arr = last.kind==='line' ? state.lines : state.circles;
+      const obj = arr.find(o=>o.id===last.objId);
+      if(obj) obj.hidden = last.prevHidden;
+    } else if(last.type==='delete'){
+      if(last.kind==='line') state.lines.push(last.obj);
+      else state.circles.push(last.obj);
+    } else {
+      if(last.newShapeId){
+        state.lines = state.lines.filter(l=>l.id!==last.newShapeId);
+        state.circles = state.circles.filter(c=>c.id!==last.newShapeId);
+      }
+      if(last.newPointIds && last.newPointIds.length){
+        state.points = state.points.filter(p=>!last.newPointIds.includes(p.id));
+      }
+    }
+    syncSolvedState();
+    render();
+  }
+
+  // Re-checks the current level's goal against the live board and brings
+  // state.done in sync either way — normally that only ever turns true, but
+  // 지우기 (delete) or 실행 취소 (undo) can also remove a piece the finished
+  // figure depended on, so this can turn a stale "완료" badge back off too.
+  function syncSolvedState(){
+    const nowSolved = LEVELS[currentLevel].check();
+    if(nowSolved && !state.done){
+      state.done=true;
+      solved[currentLevel]=true;
+      if(maxUnlocked < currentLevel+1) maxUnlocked = Math.min(currentLevel+1, LEVELS.length-1);
+      updateStatusUI(true);
+      renderSteps();
+    } else if(!nowSolved && state.done){
+      state.done=false;
+      updateStatusUI(false);
+    }
+  }
+
+  // ---------- rendering ----------
+  function drawGrid(){
+    let s = '<g opacity="1">';
+    for(let x=0;x<=VBW;x+=40){ s+=`<line x1="${x}" y1="0" x2="${x}" y2="${VBH}" stroke="var(--grid-line)" stroke-width="1"/>`; }
+    for(let y=0;y<=VBH;y+=40){ s+=`<line x1="0" y1="${y}" x2="${VBW}" y2="${y}" stroke="var(--grid-line)" stroke-width="1"/>`; }
+    s+='</g>';
+    return s;
+  }
+
+  // Renders a soft glow along an existing line/circle object, used to show
+  // which shape is "armed" (already selected for 교점) or under the pointer
+  // (컴퍼스's segment shortcut, or 교점's next pick).
+  function objectGlowSvg(obj, mode){
+    if(!obj) return '';
+    const color = mode==='armed' ? 'var(--success)' : mode==='danger' ? 'var(--danger)' : 'var(--accent-strong)';
+    const opacity = mode==='armed' ? 0.4 : mode==='danger' ? 0.45 : 0.28;
+    const width = mode==='armed' ? 6 : mode==='danger' ? 6 : 5;
+    if(obj.kind==='line'){
+      const a=findPoint(obj.ref.p1), b=findPoint(obj.ref.p2);
+      let x1,y1,x2,y2;
+      if(obj.ref.given){ x1=a.x; y1=a.y; x2=b.x; y2=b.y; }
+      else { const seg=clipToRect(a,b); if(!seg) return ''; x1=seg.x1; y1=seg.y1; x2=seg.x2; y2=seg.y2; }
+      return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="${width}" stroke-linecap="round" opacity="${opacity}" vector-effect="non-scaling-stroke"/>`;
+    }
+    const center=findPoint(obj.ref.center);
+    return `<circle cx="${center.x}" cy="${center.y}" r="${obj.ref.r}" fill="none" stroke="${color}" stroke-width="${width}" opacity="${opacity}" vector-effect="non-scaling-stroke"/>`;
+  }
+  function drawObjectHighlightLayer(){
+    let s='';
+    if(state.done && activeTool!=='hide' && activeTool!=='delete') return s;
+    if(activeTool==='intersect'){
+      if(intersectStep) s += objectGlowSvg(intersectStep, 'armed');
+      if(hoverPt){
+        const hoverObj = findNearestObject(hoverPt, snapThresholdFor(lastPointerType)*1.4);
+        if(hoverObj && !sameObject(hoverObj, intersectStep)) s += objectGlowSvg(hoverObj, 'hover');
+      }
+    } else if(activeTool==='compass' && !compassStep && hoverPt){
+      const hoverLine = findNearestLineObj(hoverPt, snapThresholdFor(lastPointerType)*1.3);
+      if(hoverLine) s += objectGlowSvg({kind:'line', ref:hoverLine}, 'hover');
+    } else if((activeTool==='hide' || activeTool==='delete') && hoverPt){
+      const hoverObj = findNearestObject(hoverPt, snapThresholdFor(lastPointerType)*1.4);
+      if(hoverObj && !hoverObj.ref.given){
+        s += objectGlowSvg(hoverObj, activeTool==='delete' ? 'danger' : 'hover');
+      }
+    }
+    return s;
+  }
+
+  function render(){
+    let s = drawGrid();
+    s += drawObjectHighlightLayer();
+
+    // circles — constructed (내가 작도한) circles are red so they read clearly
+    // against the ink-colored given figure; hidden ones (숨기기) are skipped
+    // entirely, except while the 숨기기 tool itself is active, where they show
+    // as a faint ghost so they can still be clicked to bring back.
+    for(const c of state.circles){
+      if(c.hidden && activeTool!=='hide') continue;
+      const center = findPoint(c.center);
+      const color = c.given ? 'var(--given)' : 'var(--construct)';
+      const ghost = c.hidden;
+      s += `<circle cx="${center.x}" cy="${center.y}" r="${c.r}" fill="none" stroke="${color}" stroke-width="${c.given?1.4:1.8}" stroke-dasharray="${ghost?'4 4':'none'}" opacity="${ghost?0.35:(c.given?0.85:1)}" vector-effect="non-scaling-stroke"/>`;
+    }
+    // lines
+    for(const l of state.lines){
+      if(l.hidden && activeTool!=='hide') continue;
+      const a=findPoint(l.p1), b=findPoint(l.p2);
+      const ghost = l.hidden;
+      if(l.given){
+        // given shapes are always drawn as plain, bounded segments (not
+        // extended lines/rays) so they read like a real ruler-drawn figure.
+        s += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="var(--given)" stroke-width="1.5" stroke-opacity="0.85" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+      } else {
+        const seg = clipToRect(a,b);
+        if(seg) s += `<line x1="${seg.x1}" y1="${seg.y1}" x2="${seg.x2}" y2="${seg.y2}" stroke="var(--construct)" stroke-width="1.8" stroke-dasharray="${ghost?'4 4':'none'}" opacity="${ghost?0.35:1}" vector-effect="non-scaling-stroke"/>`;
+      }
+      if(l.style && l.style.label){
+        const m = l.style.mid;
+        const dx=b.x-a.x, dy=b.y-a.y, len=Math.hypot(dx,dy)||1;
+        const ox = -dy/len*16, oy = dx/len*16;
+        s += `<text x="${m.x+ox}" y="${m.y+oy}" fill="var(--given)" font-family="IBM Plex Mono, monospace" font-size="16" font-weight="600" text-anchor="middle" dominant-baseline="middle" font-style="italic">${l.style.label}</text>`;
+      }
+    }
+    // angle arcs for given ctx if present (visual aid for angle levels) -- inferred from ray pairs sharing origin among given lines
+    s += drawAngleArcs();
+
+    // points
+    for(const p of state.points){
+      const isGiven = p.given;
+      const fill = isGiven ? 'var(--surface)' : 'var(--construct)';
+      const stroke = isGiven ? 'var(--given)' : 'var(--construct-strong)';
+      s += `<circle cx="${p.x}" cy="${p.y}" r="4.4" fill="${fill}" stroke="${stroke}" stroke-width="1.8" vector-effect="non-scaling-stroke"/>`;
+      if(p.label && !p.noLabel){
+        const lx = p.x + 11, ly = p.y - 10;
+        s += `<text x="${lx}" y="${ly}" fill="${isGiven?'var(--given)':'var(--construct-strong)'}" font-family="IBM Plex Mono, monospace" font-size="15" font-weight="600" font-style="italic">${p.label}</text>`;
+      }
+    }
+
+    // preview
+    s += drawPreview();
+
+    svg.innerHTML = s;
+  }
+
+  function drawAngleArcs(){
+    // group given rays by shared origin point to draw a small arc+label between the first two
+    const byOrigin = {};
+    for(const l of state.lines){
+      if(!l.given || !l.ray) continue;
+      byOrigin[l.p1] = byOrigin[l.p1] || [];
+      byOrigin[l.p1].push(l.p2);
+    }
+    let s='';
+    for(const originId in byOrigin){
+      const arr = byOrigin[originId];
+      if(arr.length<2) continue;
+      const O = findPoint(originId);
+      const A = findPoint(arr[0]), B = findPoint(arr[1]);
+      const ang1 = Math.atan2(A.y-O.y, A.x-O.x);
+      const ang2 = Math.atan2(B.y-O.y, B.x-O.x);
+      const R = 34;
+      const x1=O.x+R*Math.cos(ang1), y1=O.y+R*Math.sin(ang1);
+      const x2=O.x+R*Math.cos(ang2), y2=O.y+R*Math.sin(ang2);
+      let diff = ang2-ang1;
+      while(diff<=-Math.PI) diff+=2*Math.PI;
+      while(diff>Math.PI) diff-=2*Math.PI;
+      const largeArc = Math.abs(diff)>Math.PI ? 1:0;
+      const sweep = diff>0 ? 1:0;
+      s += `<path d="M ${x1} ${y1} A ${R} ${R} 0 ${largeArc} ${sweep} ${x2} ${y2}" fill="none" stroke="var(--given)" stroke-width="1.3" stroke-opacity="0.75" vector-effect="non-scaling-stroke"/>`;
+      const midAng = ang1+diff/2;
+      const lx=O.x+(R+18)*Math.cos(midAng), ly=O.y+(R+18)*Math.sin(midAng);
+      const label = state.ctx.angleLabel && state.ctx.angleLabel[originId] ? state.ctx.angleLabel[originId] : '';
+      if(label){
+        s += `<text x="${lx}" y="${ly}" fill="var(--given)" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="600" text-anchor="middle" dominant-baseline="middle">${label}</text>`;
+      }
+    }
+    return s;
+  }
+
+  // A ring around an existing point the pointer is close enough to reuse.
+  // Not shown for 교점 (that tool highlights whole objects instead, see
+  // drawObjectHighlightLayer) or once a level is solved.
+  function drawSnapIndicator(){
+    if(!hoverPt || state.done || activeTool==='intersect' || activeTool==='hide' || activeTool==='delete') return '';
+    const threshold = snapThresholdFor(lastPointerType);
+    const snap = findSnapTarget(hoverPt, threshold, {noFreePoint:true});
+    if(!snap) return '';
+    return `<circle cx="${snap.x}" cy="${snap.y}" r="9" fill="none" stroke="var(--accent-strong)" stroke-width="1.6" opacity="0.85" vector-effect="non-scaling-stroke"/>`;
+  }
+
+  function drawPreview(){
+    let out = drawSnapIndicator();
+    if(!hoverPt) return out;
+    let s='';
+    if(activeTool==='line' && pending.length>0){
+      const p1 = findPoint(pending[0]);
+      if(p1){
+        const seg = clipToRect(p1, hoverPt);
+        if(seg) s += `<line x1="${seg.x1}" y1="${seg.y1}" x2="${seg.x2}" y2="${seg.y2}" stroke="var(--construct)" stroke-width="1.4" stroke-dasharray="5 5" opacity="0.6" vector-effect="non-scaling-stroke"/>`;
+      }
+    } else if(activeTool==='circle' && pending.length>0){
+      const p1 = findPoint(pending[0]);
+      if(p1){
+        const r = dist(p1, hoverPt);
+        s += `<circle cx="${p1.x}" cy="${p1.y}" r="${r}" fill="none" stroke="var(--construct)" stroke-width="1.4" stroke-dasharray="5 5" opacity="0.6" vector-effect="non-scaling-stroke"/>`;
+      }
+    } else if(activeTool==='compass' && compassStep){
+      if(compassStep.p1id && compassStep.radius===undefined){
+        const p1 = findPoint(compassStep.p1id);
+        if(p1) s += `<line x1="${p1.x}" y1="${p1.y}" x2="${hoverPt.x}" y2="${hoverPt.y}" stroke="var(--construct)" stroke-width="1.2" stroke-dasharray="3 4" opacity="0.5" vector-effect="non-scaling-stroke"/>`;
+      } else if(compassStep.radius!==undefined){
+        s += `<circle cx="${hoverPt.x}" cy="${hoverPt.y}" r="${compassStep.radius}" fill="none" stroke="var(--construct)" stroke-width="1.4" stroke-dasharray="5 5" opacity="0.6" vector-effect="non-scaling-stroke"/>`;
+      }
+    }
+    return out + s;
+  }
+
+  function renderSteps(){
+    const dots = stepsEl.children;
+    for(let i=0;i<5;i++){
+      dots[i].classList.toggle('unlocked', i<=maxUnlocked);
+      dots[i].classList.toggle('current', i===currentLevel);
+      dots[i].classList.toggle('done', solved[i]);
+    }
+  }
+
+  function updateStatusUI(isSolved){
+    const el = document.getElementById('statusMsg');
+    const nextBtn = document.getElementById('nextBtn');
+    if(isSolved){
+      el.className='status-msg solved';
+      el.innerHTML = `<span class="badge"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12 L9 17 L20 5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> 작도를 완료했어요!`;
+      if(currentLevel < LEVELS.length-1){
+        nextBtn.classList.add('enabled');
+      } else {
+        nextBtn.classList.remove('enabled');
+        setTimeout(showFinale, 550);
+      }
+    } else {
+      el.className='status-msg';
+      el.textContent='';
+      nextBtn.classList.remove('enabled');
+    }
+  }
+
+  function showFinale(){
+    document.getElementById('levelView').style.display='none';
+    document.getElementById('finaleView').style.display='block';
+  }
+
+  // ---------- level load ----------
+  function loadLevel(i){
+    currentLevel=i;
+    state = freshState();
+    pending=[];
+    hoverPt=null;
+    document.getElementById('finaleView').style.display='none';
+    document.getElementById('levelView').style.display='block';
+    const lvl = LEVELS[i];
+    lvl.setup();
+    document.getElementById('eyebrow').textContent = `과제 ${i+1} / ${LEVELS.length}`;
+    document.getElementById('levelTitle').textContent = lvl.title;
+    document.getElementById('levelText').textContent = lvl.text;
+    document.getElementById('hintText').textContent = lvl.hint;
+    document.getElementById('hintText').classList.remove('show');
+    document.getElementById('hintToggle').textContent='힌트 보기';
+    selectTool('compass');
+    updateStatusUI(false);
+    renderSteps();
+    render();
+  }
+
+  // ---------- events ----------
+  svg.addEventListener('pointerdown', (evt)=>{
+    lastPointerType = evt.pointerType || 'mouse';
+    handleClick(evt);
+  });
+  let moveRaf = null;
+  svg.addEventListener('pointermove', (evt)=>{
+    lastPointerType = evt.pointerType || lastPointerType;
+    hoverPt = svgPointFromEvent(evt);
+    if(moveRaf) return;
+    moveRaf = requestAnimationFrame(()=>{ moveRaf=null; render(); });
+  });
+  svg.addEventListener('pointerleave', ()=>{ hoverPt=null; render(); });
+  svg.addEventListener('contextmenu', evt=>evt.preventDefault());
+
+  document.getElementById('undoBtn').addEventListener('click', undo);
+  document.getElementById('resetBtn').addEventListener('click', ()=>loadLevel(currentLevel));
+  document.getElementById('showAllBtn').addEventListener('click', ()=>{
+    let any=false;
+    state.lines.forEach(l=>{ if(l.hidden){ l.hidden=false; any=true; } });
+    state.circles.forEach(c=>{ if(c.hidden){ c.hidden=false; any=true; } });
+    if(any) render();
+  });
+  document.getElementById('cancelAction').addEventListener('click', cancelPendingAction);
+  document.getElementById('hintToggle').addEventListener('click', ()=>{
+    const el=document.getElementById('hintText');
+    el.classList.toggle('show');
+    document.getElementById('hintToggle').textContent = el.classList.contains('show') ? '힌트 숨기기' : '힌트 보기';
+  });
+  document.getElementById('nextBtn').addEventListener('click', ()=>{
+    if(currentLevel < LEVELS.length-1 && solved[currentLevel]) loadLevel(currentLevel+1);
+  });
+  document.getElementById('restartAll').addEventListener('click', ()=>{
+    for(let i=0;i<5;i++) solved[i]=false;
+    maxUnlocked=0;
+    loadLevel(0);
+  });
+  window.addEventListener('keydown', evt=>{
+    if(evt.key==='Escape') cancelPendingAction();
+  });
+
+  // set angle labels for context (used by drawAngleArcs)
+  function annotateAngleLabels(){
+    if(currentLevel===1){
+      state.ctx.angleLabel = {}; state.ctx.angleLabel[state.ctx.O.id] = '∠O';
+    } else if(currentLevel===3){
+      state.ctx.angleLabel = {}; state.ctx.angleLabel[state.ctx.Ov.id] = '∠A';
+    } else if(currentLevel===4){
+      state.ctx.angleLabel = {}; state.ctx.angleLabel[state.ctx.Bv.id] = '∠B';
+      state.ctx.angleLabel[state.ctx.Cv.id] = '∠C';
+    }
+  }
+  const _origLoad = loadLevel;
+  loadLevel = function(i){ _origLoad(i); annotateAngleLabels(); render(); };
+
+  // boot
+  loadLevel(0);
+})();
+</script>
