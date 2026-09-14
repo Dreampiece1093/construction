@@ -601,6 +601,43 @@
     return { points:[], lines:[], circles:[], history:[], labelCounter:1, ctx:{}, done:false };
   }
 
+  // ---- 클릭 사운드 (딸깍): 점을 찍거나 선택할 때 짧은 클릭음을 재생합니다.
+  // 브라우저 자동재생 정책 때문에 AudioContext는 최초 클릭(사용자 입력) 시점에
+  // 만들어지며, 오디오 재생이 막혀 있거나 실패해도 작도 기능에는 영향이 없도록
+  // 조용히 무시합니다.
+  let audioCtx = null;
+  function playClickSound(){
+    try{
+      if(!audioCtx){
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if(!AC) return;
+        audioCtx = new AC();
+      }
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      const now = audioCtx.currentTime;
+      // 짧게 감쇠하는 화이트노이즈를 밴드패스 필터로 걸러 기계식 '딸깍' 질감을 냅니다.
+      const dur = 0.03;
+      const bufferSize = Math.max(1, Math.floor(audioCtx.sampleRate * dur));
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for(let i=0;i<bufferSize;i++){
+        data[i] = (Math.random()*2-1) * Math.pow(1 - i/bufferSize, 2);
+      }
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+      const bandpass = audioCtx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.value = 2400;
+      bandpass.Q.value = 0.8;
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.32, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      noise.connect(bandpass).connect(gain).connect(audioCtx.destination);
+      noise.start(now);
+      noise.stop(now + 0.05);
+    }catch(e){ /* 오디오 재생 실패는 무시 */ }
+  }
+
   function addPoint(x,y,label,given,noLabel){
     const id = 'pt'+Math.random().toString(36).slice(2,9);
     const pt = {id,x,y,label:label||null,given:!!given,noLabel:!!noLabel};
@@ -639,7 +676,7 @@
         const target = dist(A,B);
         for(const p of state.points){
           if(p.given) continue;
-          if(Math.abs(dist(C,p)-target) < EPS_LEN && nearRay(C,d1,p) && isSegmentCovered(C,p)) return true;
+          if(Math.abs(dist(C,p)-target) < EPS_LEN && nearRay(C,d1,p) && isSegmentCovered(C,p)) return {type:'segment', a:C.id, b:p.id};
         }
         return false;
       }
@@ -666,7 +703,7 @@
           if(p.given) continue;
           if(dist(O2,p) < 12) continue;
           const a = angleDeg(O2,d1,p);
-          if(a!==null && Math.abs(a-target) < EPS_ANG && isSegmentCovered(O2,p)) return true;
+          if(a!==null && Math.abs(a-target) < EPS_ANG && isSegmentCovered(O2,p)) return {type:'angle', vertex:O2.id, ref:d1.id, point:p.id};
         }
         return false;
       }
@@ -694,7 +731,7 @@
           if(area2(P,Q,R) < MIN_AREA) continue;
           const sides=[dist(P,Q),dist(Q,R),dist(R,P)].sort((x,y)=>x-y);
           if(Math.abs(sides[0]-targets[0])<EPS_LEN && Math.abs(sides[1]-targets[1])<EPS_LEN && Math.abs(sides[2]-targets[2])<EPS_LEN){
-            if(isSegmentCovered(P,Q) && isSegmentCovered(Q,R) && isSegmentCovered(R,P)) return true;
+            if(isSegmentCovered(P,Q) && isSegmentCovered(Q,R) && isSegmentCovered(R,P)) return {type:'triangle', points:[P.id,Q.id,R.id]};
           }
         }
         return false;
@@ -731,7 +768,7 @@
             if(Math.abs(got[0]-wantSet[0])>EPS_LEN || Math.abs(got[1]-wantSet[1])>EPS_LEN) continue;
             const ang=angleDeg(V,X,Y);
             if(ang!==null && Math.abs(ang-targetAngle)<EPS_ANG){
-              if(isSegmentCovered(V,X) && isSegmentCovered(V,Y) && isSegmentCovered(X,Y)) return true;
+              if(isSegmentCovered(V,X) && isSegmentCovered(V,Y) && isSegmentCovered(X,Y)) return {type:'triangle', points:[V.id,X.id,Y.id]};
             }
           }
         }
@@ -766,7 +803,7 @@
             if(angX===null||angY===null) continue;
             if((Math.abs(angX-targetB)<EPS_ANG && Math.abs(angY-targetC)<EPS_ANG) ||
                (Math.abs(angX-targetC)<EPS_ANG && Math.abs(angY-targetB)<EPS_ANG)){
-              if(isSegmentCovered(X,Y) && isSegmentCovered(X,Z) && isSegmentCovered(Y,Z)) return true;
+              if(isSegmentCovered(X,Y) && isSegmentCovered(X,Z) && isSegmentCovered(Y,Z)) return {type:'triangle', points:[X.id,Y.id,Z.id]};
             }
           }
         }
@@ -1024,6 +1061,7 @@
     const threshold = snapThresholdFor(lastPointerType);
     const result = resolveClick(raw, threshold, {});
     const {point, created} = result;
+    playClickSound();
     const createdIds = created ? [point.id] : [];
     pending.push(point.id);
 
@@ -1057,6 +1095,7 @@
       // the radius directly; otherwise start a fresh free point.
       const hitPoint = findSnapTarget(raw, ptThreshold, {noFreePoint:true});
       if(hitPoint){
+        playClickSound();
         compassStep = {p1id: hitPoint.existing.id, createdIds:[]};
         setStepHint('반지름의 끝점을 선택하세요. (두 점 사이 거리가 반지름이 됩니다)');
         render();
@@ -1064,6 +1103,7 @@
       }
       const hitLine = findNearestLineObj(raw, lineThreshold);
       if(hitLine){
+        playClickSound();
         const a=findPoint(hitLine.p1), b=findPoint(hitLine.p2);
         compassStep = {radius: dist(a,b), createdIds:[]};
         setStepHint('이 선분의 길이를 반지름으로 사용합니다. 원의 중심이 될 점을 선택하세요.');
@@ -1071,6 +1111,7 @@
         render();
         return;
       }
+      playClickSound();
       const np = addPoint(raw.x, raw.y, autoLabel(), false);
       compassStep = {p1id: np.id, createdIds:[np.id]};
       setStepHint('반지름의 끝점을 선택하세요. (두 점 사이 거리가 반지름이 됩니다)');
@@ -1081,6 +1122,7 @@
 
     if(compassStep.p1id && compassStep.radius===undefined){
       const result = resolveClick(raw, ptThreshold, {});
+      playClickSound();
       const createdIds = compassStep.createdIds.concat(result.created?[result.point.id]:[]);
       const radius = dist(findPoint(compassStep.p1id), result.point);
       compassStep = {radius, createdIds};
@@ -1092,6 +1134,7 @@
 
     // final step: center point
     const result = resolveClick(raw, ptThreshold, {});
+    playClickSound();
     const createdIds = compassStep.createdIds.concat(result.created?[result.point.id]:[]);
     const radius = compassStep.radius;
     compassStep = null;
@@ -1117,6 +1160,7 @@
     if(!hit){ flashMiss('클릭한 곳 근처에 직선이나 원이 없어요. 도형 위를 클릭해보세요.'); return; }
 
     if(!intersectStep){
+      playClickSound();
       intersectStep = hit;
       setStepHint('교점을 만들 두 번째 도형을 클릭하세요.');
       document.getElementById('cancelAction').classList.add('show');
@@ -1135,6 +1179,7 @@
       render();
       return;
     }
+    playClickSound();
     const createdIds=[];
     for(const p of pts){
       const already = state.points.find(ep=>dist(ep,p)<2);
@@ -1248,18 +1293,22 @@
   // 지우기 (delete) or 실행 취소 (undo) can also remove a piece the finished
   // figure depended on, so this can turn a stale "완료" badge back off too.
   function syncSolvedState(){
-    const nowSolved = LEVELS[currentLevel].check();
-    if(nowSolved && !state.done){
+    const result = LEVELS[currentLevel].check(); // false, or a solution descriptor
+    if(result && !state.done){
       state.done=true;
+      state.ctx.solution = result;
       solved[currentLevel]=true;
       if(maxUnlocked < currentLevel+1) maxUnlocked = Math.min(currentLevel+1, LEVELS.length-1);
       updateStatusUI(true);
       renderSteps();
-      render(); // repaint immediately so the shape turns green right away
-    } else if(!nowSolved && state.done){
+      render(); // repaint immediately so the answer highlights green right away
+    } else if(result && state.done){
+      state.ctx.solution = result; // keep the highlighted geometry fresh
+    } else if(!result && state.done){
       state.done=false;
+      state.ctx.solution = null;
       updateStatusUI(false);
-      render(); // repaint immediately so the shape drops back to red
+      render(); // repaint immediately so the green highlight drops
     }
   }
 
@@ -1315,11 +1364,12 @@
     let s = drawGrid();
     s += drawObjectHighlightLayer();
 
-    // constructed (내가 작도한) shapes are red while still in progress, and
-    // switch to green the moment the level is solved, so completion is
-    // unmistakable even without reading the status bar/button.
-    const madeColor = state.done ? 'var(--success)' : 'var(--construct)';
-    const madeStrong = state.done ? 'var(--success-strong)' : 'var(--construct-strong)';
+    // constructed (내가 작도한) shapes stay red regardless of completion —
+    // only the specific answer (the segment/angle/triangle the level's
+    // check() actually found) turns green, via drawSolutionHighlight() below,
+    // so it's clear exactly what was completed instead of everything at once.
+    const madeColor = 'var(--construct)';
+    const madeStrong = 'var(--construct-strong)';
 
     // circles — hidden ones (숨기기) are skipped entirely, except while the
     // 숨기기 tool itself is active, where they show as a faint ghost so they
@@ -1366,10 +1416,79 @@
       }
     }
 
+    // solution highlight — draws on top of everything so the exact answer
+    // (segment / angle / triangle) reads clearly in green once solved.
+    s += drawSolutionHighlight();
+
     // preview
     s += drawPreview();
 
     svg.innerHTML = s;
+  }
+
+  // Highlights ONLY the specific geometry the current level's check()
+  // actually found (state.ctx.solution), not every red shape on the board —
+  // a thick green overlay on the winning segment/angle-sides/triangle-edges,
+  // a soft green fill for a triangle's interior, and green dots+labels on
+  // just the constructed (non-given) points involved. Given reference points
+  // are left in their normal given style since they weren't "made" by the student.
+  function drawSolutionHighlight(){
+    if(!state.done || !state.ctx.solution) return '';
+    const sol = state.ctx.solution;
+    let s = '';
+    const glow = (x1,y1,x2,y2,w) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--success)" stroke-width="${w}" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+    const dot = (p) => {
+      let out = `<circle cx="${p.x}" cy="${p.y}" r="5.6" fill="var(--success)" stroke="var(--success-strong)" stroke-width="1.8" vector-effect="non-scaling-stroke"/>`;
+      if(p.label && !p.noLabel){
+        const lx = p.x+11, ly = p.y-10;
+        out += `<text x="${lx}" y="${ly}" fill="var(--success-strong)" font-family="IBM Plex Mono, monospace" font-size="15" font-weight="600" font-style="italic">${p.label}</text>`;
+      }
+      return out;
+    };
+
+    if(sol.type==='segment'){
+      const a=findPoint(sol.a), b=findPoint(sol.b);
+      if(!a||!b) return '';
+      s += glow(a.x,a.y,b.x,b.y,4.5);
+      if(!a.given) s += dot(a);
+      if(!b.given) s += dot(b);
+    } else if(sol.type==='angle'){
+      const vertex=findPoint(sol.vertex), ref=findPoint(sol.ref), point=findPoint(sol.point);
+      if(!vertex||!ref||!point) return '';
+      // short indicator along the given reference ray, full length along the
+      // newly constructed side, plus an arc between them (same convention as
+      // drawAngleArcs, just in green) so the copied angle itself pops out.
+      const dx0=ref.x-vertex.x, dy0=ref.y-vertex.y, len0=Math.hypot(dx0,dy0)||1;
+      const R=54;
+      s += glow(vertex.x, vertex.y, vertex.x+dx0/len0*R, vertex.y+dy0/len0*R, 4);
+      s += glow(vertex.x, vertex.y, point.x, point.y, 4);
+      const ang1 = Math.atan2(dy0,dx0);
+      const dx1=point.x-vertex.x, dy1=point.y-vertex.y;
+      const ang2 = Math.atan2(dy1,dx1);
+      const AR = 34;
+      const x1=vertex.x+AR*Math.cos(ang1), y1=vertex.y+AR*Math.sin(ang1);
+      const x2=vertex.x+AR*Math.cos(ang2), y2=vertex.y+AR*Math.sin(ang2);
+      let diff = ang2-ang1;
+      while(diff<=-Math.PI) diff+=2*Math.PI;
+      while(diff>Math.PI) diff-=2*Math.PI;
+      const largeArc = Math.abs(diff)>Math.PI ? 1:0;
+      const sweep = diff>0 ? 1:0;
+      s += `<path d="M ${x1} ${y1} A ${AR} ${AR} 0 ${largeArc} ${sweep} ${x2} ${y2}" fill="none" stroke="var(--success)" stroke-width="2.4" vector-effect="non-scaling-stroke"/>`;
+      if(!vertex.given) s += dot(vertex);
+      if(!point.given) s += dot(point);
+    } else if(sol.type==='triangle'){
+      const pts = sol.points.map(findPoint);
+      if(pts.some(p=>!p)) return '';
+      const [P,Q,R] = pts;
+      // soft green fill so the completed face reads as a whole triangle, not
+      // just three lines, per the request for triangle tasks specifically.
+      s += `<polygon points="${P.x},${P.y} ${Q.x},${Q.y} ${R.x},${R.y}" fill="var(--success)" fill-opacity="0.16" stroke="none"/>`;
+      s += glow(P.x,P.y,Q.x,Q.y,4);
+      s += glow(Q.x,Q.y,R.x,R.y,4);
+      s += glow(R.x,R.y,P.x,P.y,4);
+      pts.forEach(p=>{ if(!p.given) s += dot(p); });
+    }
+    return s;
   }
 
   function drawAngleArcs(){
