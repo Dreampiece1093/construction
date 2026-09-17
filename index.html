@@ -268,15 +268,22 @@
     position:relative;
     border-top:1px solid var(--border);
   }
+  .canvas-scroll{
+    width:100%;
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+  }
   svg#board{
     display:block;
     width:100%;
     height:auto;
     aspect-ratio:4/3;
     background:var(--canvas-bg);
-    touch-action:none;
+    touch-action:pan-x pan-y;
     user-select:none;
     cursor:crosshair;
+    transition:width .15s ease;
   }
   .cancel-float{
     position:absolute;
@@ -424,6 +431,85 @@
     .tool-btn span.label{display:none;}
     .tool-btn{padding:9px;}
     .status-bar{justify-content:center;text-align:center;}
+  }
+
+  /* ---------------- 도구모음 좌측 고정 + 확대축소 우측 고정 (화면 폭 무관 항상 적용) ---------------- */
+  body{ padding-left:58px; padding-right:52px; }
+
+  #pageTask .toolbar{
+    position:fixed;
+    left:0; top:50%;
+    transform:translateY(-50%);
+    z-index:70;
+    flex-direction:column;
+    align-items:stretch;
+    width:auto;
+    max-height:82vh;
+    overflow-y:auto;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-left:none;
+    border-radius:0 16px 16px 0;
+    box-shadow:var(--shadow);
+    padding:8px 5px;
+    gap:6px;
+  }
+  #pageTask .toolbar .tool-group{
+    flex-direction:column;
+    gap:5px;
+  }
+  #pageTask .toolbar .spacer{display:none;}
+  #pageTask .toolbar .tool-btn{
+    flex-direction:column;
+    gap:2px;
+    padding:8px 6px;
+  }
+  #pageTask .toolbar .tool-btn span.label{display:none;}
+  #pageTask .toolbar .icon-btn{
+    flex-direction:column;
+    gap:2px;
+    padding:8px 5px;
+    font-size:9.5px;
+    text-align:center;
+    line-height:1.2;
+  }
+  #pageTask .toolbar .icon-btn svg{width:15px;height:15px;}
+
+  .zoom-dock{
+    position:fixed;
+    right:0; top:50%;
+    transform:translateY(-50%);
+    z-index:70;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-right:none;
+    border-radius:16px 0 0 16px;
+    box-shadow:var(--shadow);
+    padding:8px 5px;
+  }
+  .zoom-dock button{
+    width:34px;height:34px;
+    border-radius:9px;
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    color:var(--ink);
+    font-size:18px;
+    font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    touch-action:manipulation;
+    font-family:'Noto Sans KR',sans-serif;
+  }
+  .zoom-dock button:active{background:var(--accent-soft);}
+  .zoom-dock .zoom-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    color:var(--muted);
+    writing-mode:horizontal-tb;
   }
 
   /* ---------------- 프런트 페이지 (표지 / 영상 / 도구 설명) ---------------- */
@@ -662,8 +748,16 @@
       </div>
 
       <div class="canvas-wrap">
-        <svg id="board" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="canvas-scroll" id="canvasScroll">
+          <svg id="board" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
         <button class="cancel-float" id="cancelAction">✕ 작업 취소</button>
+      </div>
+
+      <div class="zoom-dock" id="zoomDock">
+        <button id="zoomInBtn" title="확대">+</button>
+        <span class="zoom-label" id="zoomLabel">100%</span>
+        <button id="zoomOutBtn" title="축소">−</button>
       </div>
 
       <div class="step-hint" id="stepHint"><span class="lamp"></span><span id="stepHintText">점을 찍어 작도를 시작하세요.</span></div>
@@ -1848,6 +1942,41 @@
     if(any) render();
   });
   document.getElementById('cancelAction').addEventListener('click', cancelPendingAction);
+
+  // ---- 확대/축소 (모바일 우측 고정 버튼) ----
+  (function(){
+    const ZOOM_MIN = 0.6, ZOOM_MAX = 2.4, ZOOM_STEP = 0.2;
+    let zoomLevel = 1;
+    const scrollBox = document.getElementById('canvasScroll');
+    const zoomLabel = document.getElementById('zoomLabel');
+    function applyZoom(prevLevel){
+      if(zoomLevel === 1){
+        svg.style.width = '';
+      } else {
+        const baseWidth = scrollBox.clientWidth;
+        svg.style.width = (baseWidth * zoomLevel) + 'px';
+      }
+      zoomLabel.textContent = Math.round(zoomLevel * 100) + '%';
+      if(scrollBox && prevLevel){
+        // 확대/축소 기준점을 화면 중앙으로 유지
+        const ratio = zoomLevel / prevLevel;
+        const cx = scrollBox.scrollLeft + scrollBox.clientWidth / 2;
+        const cy = scrollBox.scrollTop + scrollBox.clientHeight / 2;
+        scrollBox.scrollLeft = cx * ratio - scrollBox.clientWidth / 2;
+        scrollBox.scrollTop = cy * ratio - scrollBox.clientHeight / 2;
+      }
+    }
+    document.getElementById('zoomInBtn').addEventListener('click', ()=>{
+      const prev = zoomLevel;
+      zoomLevel = Math.min(ZOOM_MAX, +(zoomLevel + ZOOM_STEP).toFixed(2));
+      applyZoom(prev);
+    });
+    document.getElementById('zoomOutBtn').addEventListener('click', ()=>{
+      const prev = zoomLevel;
+      zoomLevel = Math.max(ZOOM_MIN, +(zoomLevel - ZOOM_STEP).toFixed(2));
+      applyZoom(prev);
+    });
+  })();
   document.getElementById('hintToggle').addEventListener('click', ()=>{
     const el=document.getElementById('hintText');
     el.classList.toggle('show');
